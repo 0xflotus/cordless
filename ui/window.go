@@ -53,6 +53,8 @@ type Window struct {
 	channelTree *ChannelTree
 	privateList *PrivateChatList
 
+	inspectionContainer tview.Primitive
+
 	chatArea         *tview.Flex
 	chatView         *ChatView
 	messageContainer tview.Primitive
@@ -267,6 +269,12 @@ func NewWindow(doRestart chan bool, app *tview.Application, session *discordgo.S
 				return nil
 			}
 
+			if event.Rune() == 'i' {
+				window.messageContainer.SetVisible(false)
+				window.inspectionContainer.SetVisible(true)
+				//TODO Show inspection dialog
+			}
+
 			if event.Rune() == 'r' {
 				window.messageInput.SetText("@" + message.Author.Username + "#" + message.Author.Discriminator + " " + window.messageInput.GetText())
 				app.SetFocus(window.messageInput.GetPrimitive())
@@ -304,6 +312,8 @@ func NewWindow(doRestart chan bool, app *tview.Application, session *discordgo.S
 		return event
 	})
 	window.messageContainer = window.chatView.GetPrimitive()
+
+	window.inspectionContainer = NewInspectionDialog().GetPrimitive()
 
 	window.messageInput = NewEditor()
 	window.messageInput.SetOnHeightChangeRequest(func(height int) {
@@ -860,6 +870,7 @@ func NewWindow(doRestart chan bool, app *tview.Application, session *discordgo.S
 		window.messageInput.mentionHideHandler()
 	})
 
+	window.chatArea.AddItem(window.inspectionContainer, 0, 1, false)
 	window.chatArea.AddItem(window.messageContainer, 0, 1, false)
 	window.chatArea.AddItem(mentionWindow, 2, 2, true)
 	window.chatArea.AddItem(window.messageInput.GetPrimitive(), window.messageInput.GetRequestedHeight(), 0, false)
